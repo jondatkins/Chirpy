@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Send data in JSON format, specifying the appropriate Content-Type header:
+curl -w "\n" --data '{ "body": "I had foo something interesting for breakfast" }' --header 'Content-Type: application/json' http://localhost:8080/api/validate_chirp
+echo
+curl -w "\n" --data '{ "body": "I had something interesting for breakfast" }' --header 'Content-Type: application/json' http://localhost:8080/api/validate_chirp
+# curl --data '{ "body": "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." }' --header 'Content-Type: application/json' http://localhost:8080/api/validate_chirp

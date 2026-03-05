@@ -2,6 +2,7 @@
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
 .gatorconfig.json
+assets/*
 Chirpy
 out
 repl.log

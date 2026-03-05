@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-go build -o out && ./out
+# go build -o out && ./out
+go run .
