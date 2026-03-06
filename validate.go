@@ -5,14 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 )
-
-// func handlerValidate(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte(http.StatusText(http.StatusOK)))
-// }
 
 func handlerValidate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
@@ -63,23 +56,4 @@ func handlerValidate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(dat)
-}
-
-func stripDirtyWords() {
-	type cleanMessage struct {
-		CleanMsg string `json:"cleanMessage"`
-	}
-	if strings.Contains(strings.ToLower(params.Message), "foo") {
-		respMessage := cleanMessage{
-			CleanMsg: "Too much foof\n",
-		}
-		msg, err := json.Marshal(respMessage)
-		if err != nil {
-			log.Printf("Error marshalling JSON: %s", err)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
-		w.Write(msg)
-	}
 }
