@@ -4,6 +4,7 @@
 .gatorconfig.json
 assets/*
 Chirpy
+chirpy
 out
 repl.log
 notes.md
