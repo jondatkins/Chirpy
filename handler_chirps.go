@@ -1,43 +1,42 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 	"unicode"
 )
 
-func handlerChirps(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Body string `json:"body"`
-	}
-	// type returnVals struct {
-	// 	Valid bool `json:"valid"`
-	// }
-	type returnVals struct {
-		CleanedBody string `json:"cleaned_body"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
-	err := decoder.Decode(&params)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
-		return
-	}
-
-	const maxChirpLength = 140
-	if len(params.Body) > maxChirpLength {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
-		return
-	}
-	msg, _ := stripDirtyWords(params.Body)
-
-	respondWithJSON(w, http.StatusOK, returnVals{
-		CleanedBody: msg,
-	})
-}
+// func handlerChirps(w http.ResponseWriter, r *http.Request) {
+// 	type parameters struct {
+// 		Body   string `json:"body"`
+// 		UserID string `json:"user_id"`
+// 	}
+// 	// type returnVals struct {
+// 	// 	Valid bool `json:"valid"`
+// 	// }
+// 	type returnVals struct {
+// 		CleanedBody string `json:"cleaned_body"`
+// 	}
+//
+// 	decoder := json.NewDecoder(r.Body)
+// 	params := parameters{}
+// 	err := decoder.Decode(&params)
+// 	if err != nil {
+// 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+// 		return
+// 	}
+//
+// 	const maxChirpLength = 140
+// 	if len(params.Body) > maxChirpLength {
+// 		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
+// 		return
+// 	}
+// 	msg, _ := stripDirtyWords(params.Body)
+//
+// 	respondWithJSON(w, http.StatusOK, returnVals{
+// 		CleanedBody: msg,
+// 	})
+// }
 
 func stripDirtyWords(tweet string) (string, bool) {
 	dirtyWords := []string{"kerfuffle", "sharbert", "fornax"}

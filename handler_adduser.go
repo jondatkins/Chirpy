@@ -28,7 +28,7 @@ func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error creating user", err)
 	}
-	new_user := User{
+	newUser := User{
 		ID:        user.ID,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
@@ -39,5 +39,5 @@ func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
 	// 	respondWithError(w, http.StatusInternalServerError, "Marshalling error", err)
 	// }
 	fmt.Println("User created successfully:", user)
-	respondWithJSON(w, http.StatusCreated, new_user)
+	respondWithJSON(w, http.StatusCreated, newUser)
 }

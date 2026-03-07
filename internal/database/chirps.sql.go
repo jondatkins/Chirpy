@@ -12,23 +12,30 @@ import (
 )
 
 const createChirp = `-- name: CreateChirp :one
-INSERT INTO chirps (id, created_at, updated_at, user_id)
+INSERT INTO chirps (id, created_at, updated_at,body, user_id)
 VALUES (
     gen_random_uuid(),
     NOW(),
     NOW(),
-    $1
+    $1,
+    $2
 )
-RETURNING id, created_at, updated_at, user_id
+RETURNING id, created_at, updated_at, body, user_id
 `
 
-func (q *Queries) CreateChirp(ctx context.Context, userID uuid.UUID) (Chirp, error) {
-	row := q.db.QueryRowContext(ctx, createChirp, userID)
+type CreateChirpParams struct {
+	Body   string
+	UserID uuid.UUID
+}
+
+func (q *Queries) CreateChirp(ctx context.Context, arg CreateChirpParams) (Chirp, error) {
+	row := q.db.QueryRowContext(ctx, createChirp, arg.Body, arg.UserID)
 	var i Chirp
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Body,
 		&i.UserID,
 	)
 	return i, err
@@ -44,7 +51,7 @@ func (q *Queries) DeleteChirp(ctx context.Context, id uuid.UUID) error {
 }
 
 const getChirp = `-- name: GetChirp :many
-SELECT id, created_at, updated_at, user_id FROM chirps
+SELECT id, created_at, updated_at, body, user_id FROM chirps
 `
 
 func (q *Queries) GetChirp(ctx context.Context) ([]Chirp, error) {
@@ -60,6 +67,7 @@ func (q *Queries) GetChirp(ctx context.Context) ([]Chirp, error) {
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Body,
 			&i.UserID,
 		); err != nil {
 			return nil, err
@@ -76,7 +84,7 @@ func (q *Queries) GetChirp(ctx context.Context) ([]Chirp, error) {
 }
 
 const getChirpById = `-- name: GetChirpById :one
-SELECT id, created_at, updated_at, user_id FROM chirps WHERE id=$1
+SELECT id, created_at, updated_at, body, user_id FROM chirps WHERE id=$1
 `
 
 func (q *Queries) GetChirpById(ctx context.Context, id uuid.UUID) (Chirp, error) {
@@ -86,13 +94,14 @@ func (q *Queries) GetChirpById(ctx context.Context, id uuid.UUID) (Chirp, error)
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Body,
 		&i.UserID,
 	)
 	return i, err
 }
 
 const getChirpByUserId = `-- name: GetChirpByUserId :many
-SELECT id, created_at, updated_at, user_id FROM chirps WHERE user_id=$1
+SELECT id, created_at, updated_at, body, user_id FROM chirps WHERE user_id=$1
 `
 
 func (q *Queries) GetChirpByUserId(ctx context.Context, userID uuid.UUID) ([]Chirp, error) {
@@ -108,6 +117,7 @@ func (q *Queries) GetChirpByUserId(ctx context.Context, userID uuid.UUID) ([]Chi
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Body,
 			&i.UserID,
 		); err != nil {
 			return nil, err
