@@ -8,15 +8,15 @@ import (
 	"unicode"
 )
 
-func handlerChirpsValidate(w http.ResponseWriter, r *http.Request) {
+func handlerChirps(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body string `json:"body"`
 	}
+	// type returnVals struct {
+	// 	Valid bool `json:"valid"`
+	// }
 	type returnVals struct {
-		Valid bool `json:"valid"`
-	}
-	type returnVals2 struct {
-		Cleaned_body string `json:"cleaned_body"`
+		CleanedBody string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -33,12 +33,10 @@ func handlerChirpsValidate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	msg, _ := stripDirtyWords(params.Body)
-	respondWithJSON(w, http.StatusOK, returnVals2{
-		Cleaned_body: msg,
+
+	respondWithJSON(w, http.StatusOK, returnVals{
+		CleanedBody: msg,
 	})
-	// respondWithJSON(w, http.StatusOK, returnVals{
-	// 	Valid: true,
-	// })
 }
 
 func stripDirtyWords(tweet string) (string, bool) {
@@ -47,15 +45,6 @@ func stripDirtyWords(tweet string) (string, bool) {
 	type cleanMessage struct {
 		CleanMsg string `json:"cleanMessage"`
 	}
-	// for _, dirtyWord := range dirtyWords {
-	// 	if strings.Contains(strings.ToLower(tweet), dirtyWord) {
-	// 		splitString := strings.Split(tweet, dirtyWord)
-	// 		cleanString := strings.Join(splitString, "****")
-	// 		fmt.Println(splitString)
-	// 		fmt.Println(cleanString)
-	// 		return cleanString, true
-	// 	}
-	// }
 	returnString := ""
 	isDirty := false
 	for i, tweetWord := range tweetWords {

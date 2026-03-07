@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 # go build -o out && ./out
-go run .
+go build -gcflags="all=-N -l" -o chirpy
+./chirpy

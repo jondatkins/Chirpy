@@ -7,7 +7,10 @@ import (
 	"net/http"
 	"os"
 	"sync/atomic"
+	"time"
 
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"github.com/jondatkins/Chirpy/internal/database"
 	_ "github.com/lib/pq"
 )
@@ -24,25 +27,52 @@ type apiConfig struct {
 	db             *database.Queries
 }
 
+type User struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Email     string    `json:"email"`
+}
+
 func main() {
 	const filepathroot = "."
 	const port = "8080"
+
+	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
-	db, err := sql.Open("postgres", dbURL)
-	if err != nil {
-		fmt.Println("Error Opening DB", err)
+	if dbURL == "" {
+		log.Fatal("DB_URL must be set")
 	}
-	dbQueries := database.New(db)
+
+	dbConn, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatalf("Error opening database: %s", err)
+	}
+	dbQueries := database.New(dbConn)
+
 	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
 	}
+
+	fmt.Printf("db url is %s\n", dbURL)
+	// db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		fmt.Println("Error Opening DB", err)
+	}
+	// dbQueries := database.New(db)
+	// apiCfg := apiConfig{
+	// 	fileserverHits: atomic.Int32{},
+	// 	db:             dbQueries,
+	// }
 	mux := http.NewServeMux()
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app/", http.FileServer(http.Dir(filepathroot)))))
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
-	mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
+	mux.HandleFunc("POST /api/users", apiCfg.handlerAddUser)
+	// mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
+	mux.HandleFunc("POST /api/chirps", handlerChirps)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
