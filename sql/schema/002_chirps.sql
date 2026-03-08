@@ -7,4 +7,4 @@ CREATE TABLE chirps (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 -- +goose Down
-DROP TABLE IF EXISTS chirps;
+DROP TABLE chirps;

@@ -34,14 +34,6 @@ type User struct {
 	Email     string    `json:"email"`
 }
 
-type Chirp struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	UserID    uuid.UUID `json:"user_id"`
-	Body      string    `json:"body"`
-}
-
 func main() {
 	const filepathroot = "."
 	const port = "8080"
@@ -79,8 +71,7 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerAddUser)
-	// mux.HandleFunc("POST /api/validate_chirp", handlerChirpsValidate)
-	mux.HandleFunc("POST /api/chirps", apiCfg.handlerAddChirps)
+	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpsCreate)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
