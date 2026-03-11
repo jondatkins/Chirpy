@@ -1,10 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/jondatkins/Chirpy/internal/auth"
+	"github.com/jondatkins/Chirpy/internal/database"
 )
 
 func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +18,8 @@ func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	type parameters struct {
-		Email string `json:"email"`
+		Password string `json:password`
+		Email    string `json:"email"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -23,8 +28,17 @@ func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters", err)
 		return
 	}
-	// user, err := cfg.db.CreateUser(r.Context(), params.Email)
-	user, err := cfg.db.CreateUser(r.Context(), params.Email)
+
+	hashedPassword, err := auth.HashPassword(params.Password)
+	if err != nil {
+		fmt.Printf("Error hashing password for user %s", params.Email)
+		return
+	}
+	pwdNullString := sql.NullString{String: hashedPassword, Valid: true}
+	user, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
+		params.Email,
+		pwdNullString,
+	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error creating user", err)
 	}
@@ -34,10 +48,6 @@ func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt: user.UpdatedAt,
 		Email:     user.Email,
 	}
-	// jsonUser, err := json.Marshal(new_user)
-	// if err != nil {
-	// 	respondWithError(w, http.StatusInternalServerError, "Marshalling error", err)
-	// }
 	fmt.Println("User created successfully:", user)
 	respondWithJSON(w, http.StatusCreated, newUser)
 }

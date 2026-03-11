@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jondatkins/Chirpy/internal/auth"
 	"github.com/jondatkins/Chirpy/internal/database"
 )
 
@@ -21,8 +23,9 @@ type Chirp struct {
 
 func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Body   string    `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
+		Body   string `json:"body"`
+		UserID string `json:"user_id"`
+		JWT    string `json:"jwt"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -31,11 +34,25 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters", err)
 		return
 	}
+	authHeader, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "No auth header", err)
+		return
+	}
+	userId, err := auth.ValidateJWT(authHeader, cfg.secretKey)
+	fmt.Println("authHeader:%s", authHeader)
+	// fmt.Println("secretKey:%s", cfg.secretKey)
+	fmt.Println("user id from JWT:%s", userId)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Invalid JWT", err)
+		return
+	}
 	cleaned, err := validateChirp(params.Body)
 	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
 		Body: cleaned,
 		// UserID: uuid.MustParse(params.UserID),
-		UserID: params.UserID,
+		// UserID: params.UserID,
+		UserID: userId,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error creating chirp", err)

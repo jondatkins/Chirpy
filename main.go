@@ -25,6 +25,7 @@ const htmlTemplate = `<html>
 type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
+	secretKey      string
 }
 
 type User struct {
@@ -32,6 +33,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Email     string    `json:"email"`
+	Token     string    `json:"token"`
 }
 
 func main() {
@@ -44,6 +46,10 @@ func main() {
 		log.Fatal("DB_URL must be set")
 	}
 
+	secret := os.Getenv("SECRET")
+	if secret == "" {
+		log.Fatal("SECRET must be set")
+	}
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Error opening database: %s", err)
@@ -53,6 +59,7 @@ func main() {
 	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
+		secretKey:      secret,
 	}
 
 	fmt.Printf("db url is %s\n", dbURL)
@@ -60,18 +67,16 @@ func main() {
 	if err != nil {
 		fmt.Println("Error Opening DB", err)
 	}
-	// dbQueries := database.New(db)
-	// apiCfg := apiConfig{
-	// 	fileserverHits: atomic.Int32{},
-	// 	db:             dbQueries,
-	// }
 	mux := http.NewServeMux()
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app/", http.FileServer(http.Dir(filepathroot)))))
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerAddUser)
+	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpsCreate)
+	mux.HandleFunc("GET /api/chirps", apiCfg.handlerChirpsGetAll)
+	mux.HandleFunc("GET /api/chirps/{chirpId}", apiCfg.handlerChirpsGetById)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
