@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -40,9 +39,9 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		return
 	}
 	userId, err := auth.ValidateJWT(authHeader, cfg.secretKey)
-	fmt.Println("authHeader:%s", authHeader)
+	// fmt.Println("authHeader:%s", authHeader)
 	// fmt.Println("secretKey:%s", cfg.secretKey)
-	fmt.Println("user id from JWT:%s", userId)
+	// fmt.Println("user id from JWT:%s", userId)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Invalid JWT", err)
 		return
@@ -50,7 +49,6 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 	cleaned, err := validateChirp(params.Body)
 	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
 		Body: cleaned,
-		// UserID: uuid.MustParse(params.UserID),
 		// UserID: params.UserID,
 		UserID: userId,
 	})

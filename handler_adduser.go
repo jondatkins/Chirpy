@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,10 +33,9 @@ func (cfg *apiConfig) handlerAddUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error hashing password for user %s", params.Email)
 		return
 	}
-	pwdNullString := sql.NullString{String: hashedPassword, Valid: true}
 	user, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
 		params.Email,
-		pwdNullString,
+		hashedPassword,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error creating user", err)
