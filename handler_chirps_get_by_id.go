@@ -10,6 +10,7 @@ func (cfg *apiConfig) handlerChirpsGetById(w http.ResponseWriter, r *http.Reques
 	chirpId, err := uuid.Parse(r.PathValue("chirpId"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Need 'chirpId' id", err)
+		return
 	}
 	chirp, err := cfg.db.GetChirpById(r.Context(), chirpId)
 	if err != nil {

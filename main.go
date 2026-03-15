@@ -35,6 +35,7 @@ type User struct {
 	Email        string    `json:"email"`
 	Token        string    `json:"token"`
 	RefreshToken string    `json:"refresh_token"`
+	IsChirpyRed  bool      `json:"is_chirpy_red"`
 }
 
 func main() {
@@ -74,10 +75,13 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerAddUser)
+	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateCredentials)
 	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirpsCreate)
+	mux.HandleFunc("DELETE /api/chirps/{chirpId}", apiCfg.handlerChirpsDelete)
 	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerUpgradeUser)
 	mux.HandleFunc("GET /api/chirps", apiCfg.handlerChirpsGetAll)
 	mux.HandleFunc("GET /api/chirps/{chirpId}", apiCfg.handlerChirpsGetById)
 	server := &http.Server{
